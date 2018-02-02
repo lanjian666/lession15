@@ -16,6 +16,8 @@ import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.aliyun.oss.OSSClient;
 
@@ -23,6 +25,7 @@ import com.aliyun.oss.OSSClient;
  * Servlet implementation class Fileto
  */
 public class Fileto extends HttpServlet {
+	private static final Logger logger =LogManager.getLogger(Fileto.class.getName());
 
 	protected void doGet(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
 		req.setCharacterEncoding("utf-8");
@@ -42,7 +45,7 @@ public class Fileto extends HttpServlet {
 		try {
 			items = upload.parseRequest(req);
 		} catch (FileUploadException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 		// 对所有请求信息进行判断
 		Iterator iter = items.iterator();
@@ -51,10 +54,12 @@ public class Fileto extends HttpServlet {
 				// 信息为普通的格式
 				if (item.isFormField()) {
 					String fieldName = item.getFieldName();
+					logger.info("转码前文件名"+item.getString());
 					//获取的FileItem执行如下转码方式
 					String value = item.getString("utf-8"); 
+					logger.info("转码后文件名"+value);
 					req.setAttribute(fieldName, value);
-				}
+				}   
 				// 信息为文件格式
 				else if(item.getName().length()>0){
 					String fileName = item.getName();
@@ -62,7 +67,7 @@ public class Fileto extends HttpServlet {
 					// 将文件写入
 					String endpoint = "http://oss-cn-shenzhen.aliyuncs.com";
 					// 云账号AccessKey有所有API访问权限，建议遵循阿里云安全最佳实践，创建并使用RAM子账号进行API访问或日常运维，请登录
-					// https://ram.console.aliyun.com 创建
+					// ht tps://ram.console.aliyun.com 创建
 					String accessKeyId = "LTAIvTthEd7SfAPh";
 					String accessKeySecret = "1MbHX744NDwFfW7yEptCEvurdGgq73";
 					// 创建OSSClient实例
